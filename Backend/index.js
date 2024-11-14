@@ -4,14 +4,18 @@ const bodyParser = require('body-parser');
 const app = express()
 app.use(bodyParser.json()); 
 
+//import env 
+require('dotenv').config();
+
 //Import Routes 
 const loginRoute = require('./routes/auth/login');
 const signupRoute = require('./routes/auth/signup');
+const passwordRequestRoute = require('./routes/auth/password_reset')
 app.use('/api/auth', loginRoute); 
 app.use('/api/auth', signupRoute);
+app.use('/api/auth', passwordRequestRoute);
 
-const dbName = 'BuyerSeller';
-const dbUri = `mongodb+srv://qwertydB:xVysF3AXRiftcGOo@cluster0.pikg5.mongodb.net/${dbName}?retryWrites=true&w=majority&appName=Cluster0`;
+const dbUri = process.env.CONNECTION_STRING;
 mongoose.connect(dbUri)
     .then(() => { 
     console.log('DB Connected'); 

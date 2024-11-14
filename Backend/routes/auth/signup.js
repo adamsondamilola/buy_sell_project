@@ -2,6 +2,9 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const User = require('../../models/User');
 
+//import mailer
+const mailer = require('../../services/mailer')
+
 const router = express.Router();
 
 // Signup route (existing)
@@ -9,11 +12,14 @@ router.post('/signup', async (req, res) => {
   try {
 	
     //restricting what can be posted
-    const { first_name, last_name, email, password } = req.body;
+    const { first_name, last_name, email, password, confirm_password } = req.body;
 
     //check password length
-    if(req.body.password.length < 6){
-        return res.status(400).json({message: 'Password should be at least 6 characters long'});
+    if(password.length < 6){
+      return res.status(400).json({message: 'Password should be at least 6 characters long'});
+   }
+    if(password != confirm_password){
+      return res.status(400).json({message: 'Passwords do not match'});
     }
 
     // Check if user already exists
@@ -31,6 +37,9 @@ router.post('/signup', async (req, res) => {
     });
 
     await user.save();
+
+    //send mail to user
+    mailer(req.body.email, "Welcome to Buy and Sell", "Welcome to our platform. We hope you enjoy your time on the app. <br><br>Regards!")
 
     res.status(200).json({ message: 'User created successfully' });
   } catch (err) {
