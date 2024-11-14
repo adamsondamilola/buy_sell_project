@@ -11,7 +11,7 @@ app.use('/api/auth', loginRoute);
 app.use('/api/auth', signupRoute);
 
 const dbName = 'BuyerSeller';
-const dbUri = `mongodb+srv://qwertydB:yl3Qi3tszlbZA7Qz@cluster0.pikg5.mongodb.net/${dbName}?retryWrites=true&w=majority&appName=Cluster0`;
+const dbUri = `mongodb+srv://qwertydB:xVysF3AXRiftcGOo@cluster0.pikg5.mongodb.net/${dbName}?retryWrites=true&w=majority&appName=Cluster0`;
 mongoose.connect(dbUri)
     .then(() => { 
     console.log('DB Connected'); 
@@ -21,5 +21,5 @@ mongoose.connect(dbUri)
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () =>{
-    console.log(`Running on port ${PORT}`)
+    console.log(`Running on port ${process.env.PORT}`)
 })

@@ -16,6 +16,51 @@ const userSchema = new mongoose.Schema({
     unique: true,
     trim: true
   },
+  phone: {
+    type: String,
+    required: false,
+    trim: true
+  },
+  role: {
+    type: String,
+    required: false,
+    trim: true
+  },
+  picture: {
+    type: String,
+    required: false,
+    trim: true
+  },
+  shop_name: {
+    type: String,
+    required: false,
+    trim: true
+  },
+  shop_description: {
+    type: String,
+    required: false,
+    trim: true
+  },
+  shop_address: {
+    type: String,
+    required: false,
+    trim: true
+  },
+  is_user_verified: {
+    type: Boolean,
+    required: false,
+    trim: true
+  },
+  is_email_verified: {
+    type: Boolean,
+    required: false,
+    trim: true
+  },
+  is_account_blocked: {
+    type: Boolean,
+    required: false,
+    trim: true
+  },
   password: {
     type: String,
     required: true

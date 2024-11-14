@@ -7,7 +7,8 @@ const router = express.Router();
 // Signup route (existing)
 router.post('/signup', async (req, res) => {
   try {
-	//restricting what can be posted
+	
+    //restricting what can be posted
     const { first_name, last_name, email, password } = req.body;
 
     //check password length
