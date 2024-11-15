@@ -184,4 +184,31 @@ router.put('/upload_cover_picture', authMiddleware, upload.single('cover_picture
     }
   });
 
+  router.post('/password', authMiddleware, async (req, res) => {
+    try {
+  
+      const { password, confirm_password } = req.body;
+  
+      //check password length
+      if(password.length < 6){
+       return ResponseService.badRequest(res, 'Password should be at least 6 characters long');
+      }
+  
+      //check if password match
+      if(password != confirm_password){
+        return ResponseService.badRequest(res, 'Passwords do not match');
+      }
+  
+      const user = await User.findOne({email});
+      user.password = password  //we already implemented password hash in the User Model
+      user.updatedAt = new Date();
+      await user.save();
+  
+      ResponseService.success(res, [], `Password update was successful`);
+    } catch (err) {
+        console.log(err)
+        ResponseService.error(res, 'Internal server error');
+    }
+  });
+
 module.exports = router;
