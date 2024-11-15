@@ -11,9 +11,11 @@ require('dotenv').config();
 const loginRoute = require('./routes/auth/login');
 const signupRoute = require('./routes/auth/signup');
 const passwordRequestRoute = require('./routes/auth/password_reset')
+const userUpdateRequestRoute = require('./routes/user/update')
 app.use('/api/auth', loginRoute); 
 app.use('/api/auth', signupRoute);
 app.use('/api/auth', passwordRequestRoute);
+app.use('/api/user/update', userUpdateRequestRoute);
 
 const dbUri = process.env.CONNECTION_STRING;
 mongoose.connect(dbUri)

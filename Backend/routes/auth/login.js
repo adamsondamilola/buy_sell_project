@@ -33,4 +33,24 @@ router.post('/login', async (req, res) => {
     }
   });
 
+
+// Middleware to verify token and extract user info
+const verifyToken = (req, res, next) => {
+  const token = req.headers['authorization'];
+  if (!token) return res.status(403).json({ message: 'Authentication failed' });
+
+  jwt.verify(token.split(' ')[1], process.env.HASH_KEY, (err, decoded) => {
+    if (err) return res.status(500).json({ message: 'Failed to authenticate login token' });
+    req.userId = decoded.id;
+    next();
+  });
+};
+
+// Logout route
+router.post('/logout', verifyToken, (req, res) => {
+  // Invalidate the token - client should handle removing the token
+  res.status(200).json({ message: 'Logout successful' });
+});
+
+
 module.exports = router;

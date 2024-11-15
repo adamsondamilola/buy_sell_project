@@ -21,6 +21,11 @@ const userSchema = new mongoose.Schema({
     required: false,
     trim: true
   },
+  whatsapp: {
+    type: String,
+    required: false,
+    trim: true
+  },
   role: {
     type: String,
     required: false,
@@ -28,6 +33,26 @@ const userSchema = new mongoose.Schema({
     default: "User"
   },
   picture: {
+    type: String,
+    required: false,
+    trim: true
+  },
+  cover_picture: {
+    type: String,
+    required: false,
+    trim: true
+  },
+  country: {
+    type: String,
+    required: false,
+    trim: true
+  },
+  state: {
+    type: String,
+    required: false,
+    trim: true
+  },
+  city: {
     type: String,
     required: false,
     trim: true

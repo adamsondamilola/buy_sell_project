@@ -1,6 +1,6 @@
 const nodemailer = require("nodemailer");
 
-const Mailer = async(to, subject, message) => {
+const mailer = async(to, subject, message) => {
   try {
     senderName = "Buy and Sell"
     from = process.env.GMAIL;
@@ -30,4 +30,4 @@ const Mailer = async(to, subject, message) => {
 }
 
 
-module.exports = Mailer
+module.exports = mailer

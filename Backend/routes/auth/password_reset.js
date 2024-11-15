@@ -29,7 +29,7 @@ router.post('/password_request_code', async (req, res) => {
       // Check if user exists
       const user = await User.findOne({ email });
       if (!user) {
-        return res.status(400).json({ message: 'User not found' });
+        return res.status(404).json({ message: 'User not found' });
       }
 
       // Create new password reset code
