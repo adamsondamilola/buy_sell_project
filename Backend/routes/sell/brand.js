@@ -3,7 +3,7 @@ const router = express.Router();
 const Brand = require('../../models/Brand');
 const adminAuthMiddleware = require('../../middleware/adminAuthMiddleware');
 const ResponseService = require('../../services/responses');
-const upload = require('../../middleware/productImagesUploadMiddleware'); // Ensure correct import path
+const upload = require('../../middleware/imageUploadMiddleware'); 
 
 // Create a new brand
 router.post('/create', adminAuthMiddleware, upload.single('image'), async (req, res) => {
@@ -54,7 +54,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Update a brand
-router.put('/:id', adminAuthMiddleware, authMiddleware, upload.single('image'), async (req, res) => {
+router.put('/:id', adminAuthMiddleware, upload.single('image'), async (req, res) => {
   const brandId = req.params.id;
   const { category_id, name, description } = req.body;
 
@@ -82,7 +82,7 @@ router.put('/:id', adminAuthMiddleware, authMiddleware, upload.single('image'), 
 });
 
 // Delete a brand and its image
-router.delete('/:id', adminAuthMiddleware, authMiddleware, async (req, res) => {
+router.delete('/:id', adminAuthMiddleware, async (req, res) => {
   const brandId = req.params.id;
 
   try {

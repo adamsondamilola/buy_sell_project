@@ -3,7 +3,7 @@ const router = express.Router();
 const Category = require('../../models/Category');
 const adminAuthMiddleware = require('../../middleware/adminAuthMiddleware');
 const ResponseService = require('../../services/responses');
-const upload = require('../../middleware/productImagesUploadMiddleware'); // Ensure correct import path
+const upload = require('../../middleware/imageUploadMiddleware'); 
 
 // Create a new category
 router.post('/create', adminAuthMiddleware, upload.single('image'), async (req, res) => {

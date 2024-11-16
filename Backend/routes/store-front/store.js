@@ -4,7 +4,7 @@ const Product = require('../../models/Product');
 const ResponseService = require('../../services/responses');
 
 // Get all products
-router.get('/goods', async (req, res) => {
+router.get('/', async (req, res) => {
     const { page = 1, limit = 20 } = req.query;
   try {
     const products = await Product.find({status: 1})
@@ -39,3 +39,5 @@ router.get('/:id', async (req, res) => {
     return ResponseService.error(res, 'Error fetching product');
   }
 });
+
+module.exports = router;

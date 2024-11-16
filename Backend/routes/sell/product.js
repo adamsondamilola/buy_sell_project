@@ -5,7 +5,7 @@ const User = require('../../models/User');
 const authMiddleware = require('../../middleware/authMiddleware');
 const ResponseService = require('../../services/responses');
 const stringToSlug = require('../../utils/string_to_slug')
-const upload = require('../../middleware/productImagesUploadMiddleware');
+const upload = require('../../middleware/imageUploadMiddleware');
 const fs = require('fs'); 
 const path = require('path');
 
@@ -46,7 +46,7 @@ router.post('/create', authMiddleware, upload.array('images', 5), async (req, re
   if(stock.length > 100){
     return ResponseService.badRequest(res, 'Invalid stock');
   }
-  if(!isNaN(stock)){
+  if(isNaN(stock)){
     return ResponseService.badRequest(res, 'Invalid stock. Enter a valid number');
   }
   if(price == null){
@@ -55,7 +55,7 @@ router.post('/create', authMiddleware, upload.array('images', 5), async (req, re
   if(price.length > 100){
     return ResponseService.badRequest(res, 'Invalid price');
   }
-  if(!isNaN(price)){
+  if(isNaN(price)){
     return ResponseService.badRequest(res, 'Invalid price. Enter a valid amount');
   }
   if(category == null){
@@ -181,7 +181,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
       if(stock.length > 100){
         return ResponseService.badRequest(res, 'Invalid stock');
       }
-      if(!isNaN(stock)){
+      if(isNaN(stock)){
         return ResponseService.badRequest(res, 'Invalid stock. Enter a valid number');
       }
       if(price == null){
@@ -190,7 +190,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
       if(price.length > 100){
         return ResponseService.badRequest(res, 'Invalid price');
       }
-      if(!isNaN(price)){
+      if(isNaN(price)){
         return ResponseService.badRequest(res, 'Invalid price. Enter a valid amount');
       }
       if(category == null){
