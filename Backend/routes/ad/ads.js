@@ -6,6 +6,7 @@ const authMiddleware = require('../../middleware/authMiddleware');
 const adminAuthMiddleware = require('../../middleware/adminAuthMiddleware');
 const ResponseService = require('../../services/responses');
 const daysBetweenDates = require('../../utils/days_from_dates');
+const Product = require('../../models/Product');
 
 // Create a new ad
 router.post('/create', authMiddleware, async (req, res) => {
@@ -25,6 +26,16 @@ router.post('/create', authMiddleware, async (req, res) => {
   if(country == null){
     return ResponseService.badRequest(res, 'Country is required');
   }
+
+  //check product
+  const product = await Product.findById(product_id)
+  if(!product){
+    return ResponseService.badRequest(res, 'Product not found');
+  }
+  if(product.status != 1){
+    return ResponseService.badRequest(res, 'Only approved product can be used as advert');
+  }
+
 
   const days_ = daysBetweenDates(duration_from, duration_to);
   const amount_ = 500*parseInt(days_);
