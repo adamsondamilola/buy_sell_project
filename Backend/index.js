@@ -16,6 +16,15 @@ const productRoute = require('./routes/sell/product')
 const categoryRoute = require('./routes/sell/category')
 const brandRoute = require('./routes/sell/brand')
 const storeFrontRoute = require('./routes/store-front/store')
+const transactionRoute = require('./routes/wallet/transaction')
+const adsRoute = require('./routes/ad/ads')
+const searchRoute = require('./routes/search/index')
+
+const adminProductRoute = require('./routes/admin/products/index')
+const adminAdRoute = require('./routes/admin/ads/index')
+const adminTransactionRoute = require('./routes/admin/transactions/index')
+const adminUserRoute = require('./routes/admin/users/index')
+const adminStatisticsRoute = require('./routes/admin/statistics/index')
 
 app.use('/api/auth', loginRoute); 
 app.use('/api/auth', signupRoute);
@@ -25,6 +34,14 @@ app.use('/api/sell/product', productRoute);
 app.use('/api/sell/category', categoryRoute);
 app.use('/api/sell/brand', brandRoute);
 app.use('/api/store', storeFrontRoute);
+app.use('/api/transaction', transactionRoute);
+app.use('/api/ad', adsRoute);
+app.use('/api/search', searchRoute);
+app.use('/api/admin/product', adminProductRoute);
+app.use('/api/admin/ad', adminAdRoute);
+app.use('/api/admin/transaction', adminTransactionRoute);
+app.use('/api/admin/user', adminUserRoute);
+app.use('/api/admin/statistics', adminStatisticsRoute);
 
 const dbUri = process.env.CONNECTION_STRING;
 mongoose.connect(dbUri)

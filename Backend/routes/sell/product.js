@@ -3,6 +3,7 @@ const router = express.Router();
 const Product = require('../../models/Product');
 const User = require('../../models/User');
 const authMiddleware = require('../../middleware/authMiddleware');
+const adminAuthMiddleware = require('../../middleware/adminAuthMiddleware');
 const ResponseService = require('../../services/responses');
 const stringToSlug = require('../../utils/string_to_slug')
 const upload = require('../../middleware/imageUploadMiddleware');
@@ -26,7 +27,7 @@ router.post('/create', authMiddleware, upload.array('images', 5), async (req, re
         return ResponseService.badRequest(res, 'You must have an address to start selling');
     }
   
-  const { title, description, price, stock, category, sub_category, brand } = req.body;
+  const { title, description, price, stock, category, sub_category, brand, country, state, city } = req.body;
   
   if(title == null){
     return ResponseService.badRequest(res, 'Title is required');
@@ -97,6 +98,9 @@ router.post('/create', authMiddleware, upload.array('images', 5), async (req, re
       brand, 
       image,
       images,
+      country, 
+      state, 
+      city,
       status: 0, //product must be approved before it goes life
       slug: slugGenerated
     });
@@ -116,7 +120,7 @@ router.get('/', authMiddleware, async (req, res) => {
     const products = await Product.find({user_id: userId})
     .skip((page - 1) * limit) 
     .limit(parseInt(limit));
-    const totalProducts = await Product.countDocuments();
+    const totalProducts = await Product.countDocuments({user_id: userId});
     const totalPages = Math.ceil(totalProducts / limit);
 
     return ResponseService.success(res, { products, 
@@ -135,7 +139,7 @@ router.get('/:id', async (req, res) => {
   const productId = req.params.id;
 
   try {
-    const product = await Product.findById(productId);
+    const product = await Product.findById(productId).populate('user_id');
     if (!product) {
       return ResponseService.notFound(res, 'Product not found');
     }

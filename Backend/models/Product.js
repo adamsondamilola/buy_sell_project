@@ -13,6 +13,21 @@ const ProductSchema = new Schema({
   image: { type: String },
   images: { type: [String] },
   status: { type: Number, required: true },
+  country: {
+    type: String,
+    required: false,
+    trim: true
+  },
+  state: {
+    type: String,
+    required: false,
+    trim: true
+  },
+  city: {
+    type: String,
+    required: false,
+    trim: true
+  },
   slug: { type: String, required: true }
 }, {timestamps: true });
 

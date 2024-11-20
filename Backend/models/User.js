@@ -101,6 +101,16 @@ userSchema.pre('save', async function(next) {
   next();
 });
 
+
+userSchema.set('toJSON', {
+  transform: (doc, ret, options) => {
+    delete ret.password; // Exclude 'password'
+    delete ret.email;    // Exclude 'email'
+    return ret;
+  }
+});
+
+
 const User = mongoose.model('users', userSchema);
 
 module.exports = User;

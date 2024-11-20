@@ -13,6 +13,10 @@ router.post('/login', async (req, res) => {
       if (!user) {
         return res.status(400).json({ message: 'Invalid email or password' });
       }
+
+      if (user.is_account_blocked) {
+        return res.status(400).json({ message: 'Account blocked!' });
+      }
   
       // Compare passwords
       const isMatch = await bcrypt.compare(password, user.password);
@@ -48,6 +52,7 @@ const verifyToken = (req, res, next) => {
 
 // Logout route
 router.post('/logout', verifyToken, (req, res) => {
+  res.clearCookie('token');
   // Invalidate the token - client should handle removing the token
   res.status(200).json({ message: 'Logout successful' });
 });
