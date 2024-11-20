@@ -1,8 +1,22 @@
 const mongoose = require('mongoose');
 const express = require('express')
 const bodyParser = require('body-parser');
+const rateLimit = require('express-rate-limit');
+const csurf = require('csurf');
+const csrfProtection = csurf({ cookie: true });
+const helmet = require('helmet');
+
 const app = express()
+
+const limiter = rateLimit({ 
+    windowMs: 15 * 60 * 1000, // 15 minutes 
+    max: 100 // limit each IP to 100 requests per windowMs 
+    });
+
+app.use(limiter);
+app.use(helmet());
 app.use(bodyParser.json()); 
+app.use(csrfProtection);
 
 //import env 
 require('dotenv').config();
