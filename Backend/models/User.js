@@ -32,6 +32,12 @@ const userSchema = new mongoose.Schema({
     trim: true,
     default: "User"
   },
+  rating: {
+    type: Number,
+    required: false,
+    trim: true,
+    default: 0
+  },
   picture: {
     type: String,
     required: false,
@@ -57,12 +63,22 @@ const userSchema = new mongoose.Schema({
     required: false,
     trim: true
   },
+  username: {
+    type: String,
+    required: false,
+    trim: true
+  },
   shop_name: {
     type: String,
     required: false,
     trim: true
   },
   shop_description: {
+    type: String,
+    required: false,
+    trim: true
+  },
+  dob: {
     type: String,
     required: false,
     trim: true

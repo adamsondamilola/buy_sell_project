@@ -9,16 +9,37 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "axios": "^1.7.7",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^6.1.8",
+    "@mui/material": "^6.1.8",
+    "axios": "^1.7.9",
+    "encoding": "^0.1.13",
     "face-api.js": "^0.22.2",
+    "flag-icon-css": "^4.1.7",
+    "flowbite-react": "^0.10.2",
+    "howler": "^2.2.4",
+    "intl-tel-input": "^25.0.1",
+    "lucide-react": "^0.465.0",
+    "moment": "^2.30.1",
     "next": "15.0.3",
-    "react": "19.0.0-rc-66855b96-20241106",
-    "react-dom": "19.0.0-rc-66855b96-20241106"
+    "next-share": "^0.27.0",
+    "node-fetch": "^3.3.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-howler": "^5.2.0",
+    "react-infinite-scroll-component": "^6.1.0",
+    "react-phone-input-2": "^2.15.1",
+    "react-spinners": "^0.14.1",
+    "react-toastify": "^10.0.6",
+    "simple-peer": "^9.11.1",
+    "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
+    "autoprefixer": "^10.4.20",
     "eslint": "^8",
     "eslint-config-next": "15.0.3",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1"
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.15"
   }
 }

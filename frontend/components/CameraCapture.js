@@ -25,6 +25,21 @@ const CameraCapture = ({ onCapture }) => {
 
 
   const startCamera = async () => {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        videoRef.current.srcObject = stream;
+        setCameraActive(true);
+      } catch (err) {
+        alert(err);
+        console.log('Error accessing camera:', err);
+      }
+    } else {
+      console.log('getUserMedia is not supported by this browser.');
+    }
+  };
+  
+ /* const startCamera = async () => {
     if(videoRef.current){
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -35,7 +50,7 @@ const CameraCapture = ({ onCapture }) => {
         console.log('Error accessing camera:', err);
       }
     }
-  };
+  }; */
 
   const captureImage = async () => {
     const canvas = faceapi.createCanvasFromMedia(videoRef.current);
@@ -65,7 +80,7 @@ const CameraCapture = ({ onCapture }) => {
       const imageData = canvas.toDataURL('image/png');
       onCapture(imageData, detections);
     } catch (err) {
-      console.error('Error detecting faces:', err);
+      console.log('Error detecting faces:', err);
     }
   };
 

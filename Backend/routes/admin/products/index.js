@@ -7,7 +7,7 @@ const ResponseService = require('../../../services/responses');
 const stringToSlug = require('../../../utils/string_to_slug')
 const upload = require('../../../middleware/imageUploadMiddleware');
 const fs = require('fs'); 
-const path = require('path');
+const Category = require('../../../models/Category');
 
 // Create a new product
 router.post('/create', adminAuthMiddleware, upload.array('images', 5), async (req, res) => {
@@ -26,8 +26,14 @@ router.post('/create', adminAuthMiddleware, upload.array('images', 5), async (re
         return ResponseService.badRequest(res, 'You must have an address to start selling');
     }
   
-  const {user_id, title, description, price, stock, category, sub_category, brand, country, state, city } = req.body;
+  const {user_id, title, description, details, price, stock, category, sub_category, brand, condition, country, state, city, colors } = req.body;
   
+  //check if category is available
+  const cat = await Category.findOne({name: category});
+  if(!cat){
+    return ResponseService.notFound(res, 'Category not found');
+  }
+
   if(title == null){
     return ResponseService.badRequest(res, 'Title is required');
   }
@@ -42,6 +48,9 @@ router.post('/create', adminAuthMiddleware, upload.array('images', 5), async (re
   }
   if(stock == null){
     return ResponseService.badRequest(res, 'Stock is required');
+  }
+  if(condition == null){
+    return ResponseService.badRequest(res, 'Condition is required');
   }
   if(stock.length > 100){
     return ResponseService.badRequest(res, 'Invalid stock');
@@ -90,18 +99,21 @@ router.post('/create', adminAuthMiddleware, upload.array('images', 5), async (re
       user_id,
       title,
       description,
+      details,
       price,
       stock,
       category,
       sub_category,
       brand, 
       image,
-      images, 
+      images,
+      condition,
       country, 
       state, 
       city,
       status: 0, //product must be approved before it goes life
-      slug: slugGenerated
+      slug: slugGenerated,
+      colors
     });
 
     await newProduct.save();
@@ -111,12 +123,14 @@ router.post('/create', adminAuthMiddleware, upload.array('images', 5), async (re
   }
 });
 
+/*
 // Get all products
 router.get('/', adminAuthMiddleware, async (req, res) => {
     const { page = 1, limit = 20 } = req.query;
   try {
     const products = await Product.find()
-    .skip((page - 1) * limit) 
+    .sort({ createdAt: -1 })
+.skip((page - 1) * limit) 
     .limit(parseInt(limit))
     .populate('user_id');
     const totalProducts = await Product.countDocuments();
@@ -131,14 +145,58 @@ router.get('/', adminAuthMiddleware, async (req, res) => {
   } catch (error) {
     return ResponseService.error(res, 'Error fetching products');
   }
+}); */
+
+// Get all products with search functionality
+router.get('/', adminAuthMiddleware, async (req, res) => {
+  const { page = 1, limit = 20, search } = req.query;
+
+  try {
+      // Build the search query
+      let searchQuery = {};
+      if (search) {
+          searchQuery = {
+              $or: [
+                  { title: { $regex: search, $options: 'i' } },
+                  { description: { $regex: search, $options: 'i' } },
+                  { category: { $regex: search, $options: 'i' } },
+                  { sub_category: { $regex: search, $options: 'i' } },
+                  { brand: { $regex: search, $options: 'i' } },
+                  { condition: { $regex: search, $options: 'i' } }
+              ]
+          };
+      }
+
+      const products = await Product.find(searchQuery)
+          .sort({ createdAt: -1 })
+          .skip((page - 1) * limit)
+          .limit(parseInt(limit))
+          .populate('user_id');
+
+      const totalProducts = await Product.countDocuments(searchQuery);
+      const totalPages = Math.ceil(totalProducts / limit);
+
+      return ResponseService.success(res, {
+          products,
+          currentPage: parseInt(page),
+          totalPages,
+          totalProducts
+      }, 'Products fetched successfully');
+
+  } catch (error) {
+      console.error('Error fetching products:', error);
+      return ResponseService.error(res, 'Error fetching products');
+  }
 });
+
 
 // Get all pending products
 router.get('/pending', adminAuthMiddleware, async (req, res) => {
     const { page = 1, limit = 20 } = req.query;
   try {
     const products = await Product.find({status: 0})
-    .skip((page - 1) * limit) 
+    .sort({ createdAt: -1 })
+.skip((page - 1) * limit) 
     .limit(parseInt(limit))
     .populate('user_id');
     const totalProducts = await Product.countDocuments({status: 0});
@@ -160,7 +218,8 @@ router.get('/approved', adminAuthMiddleware, async (req, res) => {
     const { page = 1, limit = 20 } = req.query;
   try {
     const products = await Product.find({status: 1})
-    .skip((page - 1) * limit) 
+    .sort({ createdAt: -1 })
+.skip((page - 1) * limit) 
     .limit(parseInt(limit))
     .populate('user_id');
     const totalProducts = await Product.countDocuments({status: 1});
@@ -182,7 +241,8 @@ router.get('/declined', adminAuthMiddleware, async (req, res) => {
     const { page = 1, limit = 20 } = req.query;
   try {
     const products = await Product.find({status: 2})
-    .skip((page - 1) * limit) 
+    .sort({ createdAt: -1 })
+.skip((page - 1) * limit) 
     .limit(parseInt(limit))
     .populate('user_id');
     const totalProducts = await Product.countDocuments({status: 2});
@@ -200,12 +260,13 @@ router.get('/declined', adminAuthMiddleware, async (req, res) => {
 });
 
 // Get all products by user
-router.get('user_id/user', adminAuthMiddleware, async (req, res) => {
+router.get('/:user_id/user', adminAuthMiddleware, async (req, res) => {
     const userId = req.params.user_id
     const { page = 1, limit = 20 } = req.query;
   try {
     const products = await Product.find({user_id: userId})
-    .skip((page - 1) * limit) 
+    .sort({ createdAt: -1 })
+.skip((page - 1) * limit) 
     .limit(parseInt(limit));
     const totalProducts = await Product.countDocuments({user_id: userId});
     const totalPages = Math.ceil(totalProducts / limit);
@@ -219,7 +280,7 @@ router.get('user_id/user', adminAuthMiddleware, async (req, res) => {
   } catch (error) {
     return ResponseService.error(res, 'Error fetching products');
   }
-});
+}); 
 
 // Get a single product by ID
 router.get('/:id', async (req, res) => {
@@ -241,7 +302,7 @@ router.get('/:id', async (req, res) => {
 router.put('/:id', adminAuthMiddleware, async (req, res) => {
   const productId = req.params.id;
   const userId = req.user.userId;
-  const { title, description, price, stock, category, sub_category, brand } = req.body;
+  const { title, description, details, price, stock, category, sub_category, brand, condition, country, state, city, colors, status } = req.body;
 
   try {
     const product = await Product.findById(productId);
@@ -304,11 +365,18 @@ router.put('/:id', adminAuthMiddleware, async (req, res) => {
     // Update product fields
     product.title = title || product.title;
     product.description = description || product.description;
+    product.details = details || product.details;
     product.price = price || product.price;
     product.stock = stock || product.stock;
     product.category = category || product.category;
     product.sub_category = sub_category || product.sub_category;
     product.brand = brand || product.brand; 
+    product.condition = condition || product.condition; 
+    product.country = country || product.country; 
+    product.state = state || product.state; 
+    product.city = city || product.city; 
+    product.colors = colors || product.colors; 
+    product.status = status || product.status; 
     product.updatedAt = new Date();
 
     await product.save();
@@ -349,12 +417,12 @@ router.delete('/:id', adminAuthMiddleware, async (req, res) => {
     product.images.forEach((imagePath) => 
         { fs.unlink(imagePath, (err) => { 
             if (err) { 
-                console.error(`Error deleting file ${imagePath}:`, err.message); 
+                console.log(`Error deleting file ${imagePath}:`, err.message); 
             } 
         }); 
     });
 
-    await product.remove();
+    await Product.deleteOne({_id: productId});
     return ResponseService.success(res, {}, 'Product deleted successfully');
   } catch (error) {
     return ResponseService.error(res, 'Error deleting product');
@@ -376,12 +444,12 @@ router.delete('/:id/user/products/delete', adminAuthMiddleware, async (req, res)
         product.images.forEach((imagePath) => { 
             fs.unlink(imagePath, (err) => { 
                 if (err) { 
-                console.error(`Error deleting file ${imagePath}:`, err.message); 
+                console.log(`Error deleting file ${imagePath}:`, err.message); 
             } 
             }); 
             }); 
             // Delete the product from the database 
-            await product.remove(); 
+            await Product.deleteOne({_id: product._id});
       }
       return ResponseService.success(res, {}, 'Products deleted successfully');
     } catch (error) {

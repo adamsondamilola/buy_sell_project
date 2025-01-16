@@ -4,7 +4,14 @@ const Schema = mongoose.Schema;
 const ProductSchema = new Schema({
   user_id: { type: Schema.Types.ObjectId, ref: 'users', required: true },
   title: { type: String, required: true },
-  description: { type: String },
+  description: {
+    type: String,
+    required: true
+  },
+  details: {
+    type: Object,
+    required: false
+  },  
   price: { type: Number, required: true },
   stock: { type: Number, required: true },
   category: { type: String, required: true },
@@ -12,7 +19,14 @@ const ProductSchema = new Schema({
   brand: { type: String },
   image: { type: String },
   images: { type: [String] },
-  status: { type: Number, required: true },
+  colors: { type: [String] },
+  video: { type: String },
+  status: { type: Number, required: true, default: 0 },
+  condition: {
+    type: String,
+    required: true,
+    trim: true
+  },
   country: {
     type: String,
     required: false,

@@ -9,6 +9,8 @@ const stringToSlug = require('../../utils/string_to_slug')
 const upload = require('../../middleware/imageUploadMiddleware');
 const fs = require('fs'); 
 const path = require('path');
+const Category = require('../../models/Category');
+const formatFilePath = require('../../utils/formatFilePath');
 
 // Create a new product
 router.post('/create', authMiddleware, upload.array('images', 5), async (req, res) => {
@@ -17,18 +19,31 @@ router.post('/create', authMiddleware, upload.array('images', 5), async (req, re
     //before posting products, a user must meet some conditions
     //conditions includes having a profile picture, shop name, and shop address
     const user = await User.findById(userId);
-    if(user.picture == null){
-        return ResponseService.badRequest(res, 'You must have a profile picture to start selling');
-    }
-    if(user.shop_name == null){
+    if(user.role != "Seller" && user.role != "Admin"){
+      return ResponseService.badRequest(res, 'You must get verified to start posting');
+  }
+  if(user.picture == null){
+    return ResponseService.badRequest(res, 'You must have a profile picture to start selling');
+}
+if(user.shop_name == null){
         return ResponseService.badRequest(res, 'You must have a shop name to start selling');
     }
     if(user.shop_address == null){
         return ResponseService.badRequest(res, 'You must have an address to start selling');
     }
   
-  const { title, description, price, stock, category, sub_category, brand, country, state, city } = req.body;
+  const { title, description, details, price, stock, category, sub_category, brand, condition, country, state, city, colors } = req.body;
   
+  //check if category is available
+  const cat = await Category.findOne({name: category});
+  if(!cat){
+    return ResponseService.notFound(res, 'Category not found');
+  }
+
+  if(sub_category == null){
+    return ResponseService.badRequest(res, 'Select a category or product type');
+  }
+
   if(title == null){
     return ResponseService.badRequest(res, 'Title is required');
   }
@@ -59,6 +74,9 @@ router.post('/create', authMiddleware, upload.array('images', 5), async (req, re
   if(isNaN(price)){
     return ResponseService.badRequest(res, 'Invalid price. Enter a valid amount');
   }
+  if(condition == null){
+    return ResponseService.badRequest(res, 'Select condition');
+  }
   if(category == null){
     return ResponseService.badRequest(res, 'Select a category');
   }
@@ -84,13 +102,15 @@ router.post('/create', authMiddleware, upload.array('images', 5), async (req, re
   
   const slugGenerated = stringToSlug(title)
   
-  const images = req.files.map(file => file.path);
-  const image = images[0];
+  //const images = req.files.map(file => file.path);
+  const images = req.files.map(file => formatFilePath(file.path));
+  const image = formatFilePath(images[0]);
   try {
     const newProduct = new Product({
       user_id: userId,
       title,
       description,
+      details,
       price,
       stock,
       category,
@@ -98,15 +118,17 @@ router.post('/create', authMiddleware, upload.array('images', 5), async (req, re
       brand, 
       image,
       images,
+      condition,
       country, 
       state, 
       city,
-      status: 0, //product must be approved before it goes life
-      slug: slugGenerated
+      status: 0, //1 means live, 0 means pending
+      slug: slugGenerated,
+      colors
     });
 
     await newProduct.save();
-    return ResponseService.success(res, newProduct, 'Product created successfully');
+    return ResponseService.success(res, newProduct, 'Product created successfully and awaiting approval');
   } catch (error) {
     return ResponseService.error(res, 'Error creating product');
   }
@@ -118,7 +140,8 @@ router.get('/', authMiddleware, async (req, res) => {
     const { page = 1, limit = 20 } = req.query;
   try {
     const products = await Product.find({user_id: userId})
-    .skip((page - 1) * limit) 
+    .sort({ createdAt: -1 })
+.skip((page - 1) * limit) 
     .limit(parseInt(limit));
     const totalProducts = await Product.countDocuments({user_id: userId});
     const totalPages = Math.ceil(totalProducts / limit);
@@ -154,7 +177,7 @@ router.get('/:id', async (req, res) => {
 router.put('/:id', authMiddleware, async (req, res) => {
   const productId = req.params.id;
   const userId = req.user.userId;
-  const { title, description, price, stock, category, sub_category, brand } = req.body;
+  const { title, description, details, price, stock, category, sub_category, brand } = req.body;
 
   try {
     const product = await Product.findById(productId);
@@ -217,15 +240,17 @@ router.put('/:id', authMiddleware, async (req, res) => {
     // Update product fields
     product.title = title || product.title;
     product.description = description || product.description;
+    product.details = details || product.details;
     product.price = price || product.price;
     product.stock = stock || product.stock;
     product.category = category || product.category;
     product.sub_category = sub_category || product.sub_category;
     product.brand = brand || product.brand; 
+    product.status = 0;
     product.updatedAt = new Date();
 
     await product.save();
-    return ResponseService.success(res, product, 'Product updated successfully');
+    return ResponseService.success(res, product, 'Product updated successfully and will be reviewed');
   } catch (error) {
     return ResponseService.error(res, 'Error updating product');
   }
@@ -249,12 +274,11 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     product.images.forEach((imagePath) => 
         { fs.unlink(imagePath, (err) => { 
             if (err) { 
-                console.error(`Error deleting file ${imagePath}:`, err.message); 
+                console.log(`Error deleting file ${imagePath}:`, err.message); 
             } 
         }); 
     });
-
-    await product.remove();
+    await Product.deleteOne({_id: productId});
     return ResponseService.success(res, {}, 'Product deleted successfully');
   } catch (error) {
     return ResponseService.error(res, 'Error deleting product');

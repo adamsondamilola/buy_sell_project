@@ -3,8 +3,8 @@ const Schema = mongoose.Schema;
 
 const BrandSchema = new Schema({
   category_id: { type: Schema.Types.ObjectId, ref: 'categories', required: true },
+  category_name: { type: String, required: true },
   name: { type: String, required: true },
-  description: { type: String },
   image: { type: String }
 }, { timestamps: true });
 

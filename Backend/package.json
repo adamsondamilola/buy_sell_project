@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -10,16 +11,31 @@
   "description": "",
   "dependencies": {
     "axios": "^1.7.7",
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
     "csurf": "^1.11.0",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "express-rate-limit": "^7.4.1",
+    "express-session": "^1.18.1",
     "face-api.js": "^0.22.2",
     "flutterwave-node-v3": "^1.1.12",
+    "geoip-lite": "^1.4.10",
     "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.10.0",
+    "mongoose": "^8.9.3",
     "multer": "^1.4.5-lts.1",
-    "nodemailer": "^6.9.16"
+    "next": "^15.0.3",
+    "nodemailer": "^6.9.16",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
+    "webrtc-adapter": "^9.0.1"
   }
 }

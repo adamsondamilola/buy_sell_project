@@ -4,10 +4,13 @@ const User = require('../../models/User');
 const authMiddleware = require('../../middleware/authMiddleware')
 const ResponseService = require('../../services/responses');
 const upload = require('../../middleware/imageUploadMiddleware');
+const isUsernameValid = require('../../utils/validate_username');
+const formatFilePath = require('../../utils/formatFilePath');
+const bcrypt = require('bcryptjs');
 // Update user profile
 router.put('/profile', authMiddleware, upload.single('profile_picture'), async (req, res) => {
   const userId = req.user.userId;
-  const { first_name, last_name, phone, whatsapp, country, state, city } = req.body;
+  const { first_name, last_name, phone, whatsapp, country, state, city, dob } = req.body;
   try {
 
     if (first_name == "" || first_name.length < 3) {
@@ -55,9 +58,9 @@ router.put('/profile', authMiddleware, upload.single('profile_picture'), async (
 
 
 
-    const updateData = { first_name, last_name, phone, whatsapp, country, state, city };
+    const updateData = { first_name, last_name, phone, whatsapp, country, state, city, dob };
     if (req.file) {
-      updateData.picture = req.file.path; // Save the file path to the user's profile picture 
+      updateData.picture = formatFilePath(req.file.path); // Save the file path to the user's profile picture 
     }
 
     Object.keys(updateData).forEach(key => {
@@ -72,10 +75,20 @@ router.put('/profile', authMiddleware, upload.single('profile_picture'), async (
   }
 });
 
+//shop
 router.put('/shop', authMiddleware, upload.single('profile_picture'), async (req, res) => {
   const userId = req.user.userId;
-  const { shop_name, shop_description, shop_address, phone, whatsapp, country, state, city } = req.body;
+  const { username, shop_name, shop_description, shop_address, phone, whatsapp, country, state, city } = req.body;
 
+  if (username == null) {
+    return ResponseService.badRequest(res, 'Username cannot be empty');
+  }
+  if (!isUsernameValid(username)) {
+    return ResponseService.badRequest(res, 'Username should not have space');
+  }
+  if (username.length > 50) {
+    return ResponseService.badRequest(res, 'Username too long');
+  }
   if (shop_name == null) {
     return ResponseService.badRequest(res, 'Business name cannot be empty');
   }
@@ -126,14 +139,17 @@ router.put('/shop', authMiddleware, upload.single('profile_picture'), async (req
   }
 
   try {
+    //check if username exists
+    const checkUsername = await User.findOne({username: username});
+    if(checkUsername) return ResponseService.badRequest(res, 'Username already in use');
     const user = await User.findById(userId);
     if (!user) {
       return ResponseService.notFound(res, 'User not found');
     }
 
-    const updateData = { shop_name, shop_description, shop_address, phone, whatsapp, country, state, city };
+    const updateData = {username, shop_name, shop_description, shop_address, phone, whatsapp, country, state, city };
     if (req.file) {
-      updateData.picture = req.file.path; // Save the file path to the user's profile picture 
+      updateData.picture = formatFilePath(req.file.path); // Save the file path to the user's profile picture 
     }
     Object.keys(updateData).forEach(key => {
       user[key] = updateData[key];
@@ -162,7 +178,7 @@ router.put('/upload_profile_picture', authMiddleware, upload.single('profile_pic
       return ResponseService.notFound(res, 'User not found');
     }
 
-    user.picture = req.file.path; // Save the file path to the user's profile picture
+    user.picture = formatFilePath(req.file.path); // Save the file path to the user's profile picture
     user.updatedAt = new Date();
 
     await user.save();
@@ -186,7 +202,7 @@ router.put('/upload_cover_picture', authMiddleware, upload.single('cover_picture
       return ResponseService.notFound(res, 'User not found');
     }
 
-    user.cover_picture = req.file.path; // Save the file path to the user's profile picture
+    user.cover_picture = formatFilePath(req.file.path); // Save the file path to the user's profile picture
     user.updatedAt = new Date();
 
     await user.save();
@@ -198,29 +214,41 @@ router.put('/upload_cover_picture', authMiddleware, upload.single('cover_picture
 
 router.post('/password', authMiddleware, async (req, res) => {
   try {
+    const { current_password, password, confirm_password } = req.body;
+    const userId = req.user.userId; 
 
-    const { password, confirm_password } = req.body;
+    // Check if the current password matches
+    const user = await User.findById(userId);
+    const isMatch = await bcrypt.compare(current_password, user.password);
+      if (!isMatch) {
+        return ResponseService.badRequest(res, 'You entered wrong password');
+      }
 
-    //check password length
+    // Check password length
     if (password.length < 6) {
       return ResponseService.badRequest(res, 'Password should be at least 6 characters long');
     }
 
-    //check if password match
-    if (password != confirm_password) {
+    // Check if passwords match
+    if (password !== confirm_password) {
       return ResponseService.badRequest(res, 'Passwords do not match');
     }
+    
+    if (current_password === password) {
+      return ResponseService.badRequest(res, 'No changes made');
+    }
 
-    const user = await User.findOne({ email });
+    // Update password
     user.password = password  //we already implemented password hash in the User Model
     user.updatedAt = new Date();
     await user.save();
 
-    ResponseService.success(res, [], `Password update was successful`);
+    return ResponseService.success(res, [], 'Password update was successful');
   } catch (err) {
-    console.log(err)
-    ResponseService.error(res, 'Internal server error');
+    console.error('Error updating password:', err);
+    return ResponseService.error(res, 'Internal server error');
   }
 });
+
 
 module.exports = router;
